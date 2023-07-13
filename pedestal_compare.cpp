@@ -1,14 +1,14 @@
 
 // a helper
-TH1F* plot_apv(const vector<float> &v, int crate, int mpd, int adc, const char* prefix="noise")
+TH1F* plot_apv(const vector<float> &v, int crate, int slot, int mpd, int adc, const char* prefix="noise")
 {
     if(v.size() != 128) {
         cout<<"Error reading apv data."<<endl;
         return nullptr;
     }
 
-    TH1F *h = new TH1F(Form("%s_crate_%d_fiber_%d_adc_%d", prefix, crate, mpd, adc),
-            Form("%s_crate_%d_fiber_%d_adc_%d", prefix, crate, mpd, adc),
+    TH1F *h = new TH1F(Form("%s_crate_%d_slot_%d_fiber_%d_adc_%d", prefix, crate, slot, mpd, adc),
+                       Form("%s_crate_%d_slot_%d_fiber_%d_adc_%d", prefix, crate, slot, mpd, adc),
             138, -5, 133);
 
     for(size_t i=0;i<v.size();i++)
@@ -18,6 +18,7 @@ TH1F* plot_apv(const vector<float> &v, int crate, int mpd, int adc, const char* 
 
     return h;
 }
+
 
 // plot pedestal
 void pedestal_compare(int run1,int run2)
@@ -35,16 +36,18 @@ void pedestal_compare(int run1,int run2)
 
 
     vector<TH1F*> res1;
+    
 
     vector<float> apv_offset1;
     vector<float> apv_noise1;
 
-    TH1F *h_res1 = new TH1F("h_res","RMS of All Channels;ADC RMS;",200,0,60);
-    TH1F *h_off1 = new TH1F("h_off","Offset of All Channels;ADC Offset;",200,-200,200);
+    TH1F *h_res1 = new TH1F("h_res1","RMS of All Channels;ADC RMS;",200,0,60);
+    TH1F *h_off1 = new TH1F("h_off1","Offset of All Channels;ADC Offset;",200,-200,200);
 
     string line1;
     int mpd1 = -1;
     int adc1 = -1;
+    int slot1 = -1;
     int crate1 = -1;
     int current_MPD1 = -1;
     int nMPD1 = 0;
@@ -60,12 +63,13 @@ void pedestal_compare(int run1,int run2)
 		nMPD1++;
 		current_MPD1 = temp_MPD1;
 	      }
-	      res1.push_back(plot_apv(apv_offset1, crate1, mpd1, adc1, "offset"));
-	      res1.push_back(plot_apv(apv_noise1, crate1, mpd1, adc1, "noise"));
+	      res1.push_back(plot_apv(apv_offset1, crate1,slot1, mpd1, adc1, "offset"));
+	      res1.push_back(plot_apv(apv_noise1, crate1,slot1, mpd1, adc1, "noise"));
+
             }
 	  }
 	  
-	  iss1 >> tmp1 >> crate1 >> mpd1 >> adc1;
+	  iss1 >> tmp1 >> crate1 >> slot1 >> mpd1 >> adc1;
 	  
 	  apv_offset1.clear();
 	  apv_noise1.clear();
@@ -83,9 +87,8 @@ void pedestal_compare(int run1,int run2)
     }
 
     //Do one last time for last APV
-    res1.push_back(plot_apv(apv_offset1, crate1, mpd1, adc1, "offset"));
-    res1.push_back(plot_apv(apv_noise1, crate1, mpd1, adc1, "noise"));
-
+    res1.push_back(plot_apv(apv_offset1, crate1, slot1,  mpd1, adc1, "offset"));
+    res1.push_back(plot_apv(apv_noise1, crate1, slot1, mpd1, adc1, "noise"));
 
  const char* mypath = datPath.c_str();
 
@@ -97,12 +100,13 @@ void pedestal_compare(int run1,int run2)
     vector<float> apv_offset2;
     vector<float> apv_noise2;
 
-    TH1F *h_res2 = new TH1F("h_res","RMS of All Channels;ADC RMS;",200,0,60);
-    TH1F *h_off2 = new TH1F("h_off","Offset of All Channels;ADC Offset;",200,-200,200);
+    TH1F *h_res2 = new TH1F("h_res2","RMS of All Channels;ADC RMS;",200,0,60);
+    TH1F *h_off2 = new TH1F("h_off2","Offset of All Channels;ADC Offset;",200,-200,200);
 
     string line2;
     int mpd2 = -1;
     int adc2 = -1;
+    int slot2 = -1;
     int crate2 = -1;
     int current_MPD2 = -1;
     int nMPD2 = 0;
@@ -118,12 +122,12 @@ void pedestal_compare(int run1,int run2)
 		nMPD2++;
 		current_MPD2 = temp_MPD2;
 	      }
-	      res2.push_back(plot_apv(apv_offset2, crate2, mpd2, adc2, "offset"));
-	      res2.push_back(plot_apv(apv_noise2, crate2, mpd2, adc2, "noise"));
+	      res2.push_back(plot_apv(apv_offset2, crate2, slot2, mpd2, adc2, "offset"));
+	      res2.push_back(plot_apv(apv_noise2, crate2, slot2, mpd2, adc2, "noise"));
             }
 	  }
 	  
-	  iss2 >> tmp2 >> crate2 >> mpd2 >> adc2;
+	  iss2 >> tmp2 >> crate2 >> slot2 >> mpd2 >> adc2;
 	  
 	  apv_offset2.clear();
 	  apv_noise2.clear();
@@ -141,8 +145,8 @@ void pedestal_compare(int run1,int run2)
     }
 
     //Do one last time for last APV
-    res2.push_back(plot_apv(apv_offset2, crate2, mpd2, adc2, "offset"));
-    res2.push_back(plot_apv(apv_noise2, crate2, mpd2, adc2, "noise"));
+    res2.push_back(plot_apv(apv_offset2, crate2, slot2, mpd2, adc2, "offset"));
+    res2.push_back(plot_apv(apv_noise2, crate2, slot2, mpd2, adc2, "noise"));
    
 
     // save histos
@@ -193,7 +197,8 @@ void pedestal_compare(int run1,int run2)
     TKey *key1;
     TKey *key2;
     int nCanvas = 0;
-    int nPad = 0;
+    int nPad1 = 0;
+    int nPad2 = 0;
     current_MPD1 = -1;
     while( (key1 = (TKey*)keyList1()) && (key2 = (TKey*)keyList2()) ){
         TClass *cl1 = gROOT -> GetClass(key1->GetClassName());
@@ -216,25 +221,26 @@ void pedestal_compare(int run1,int run2)
 	  if(current_MPD1 != -1) nCanvas++;
 	  current_MPD1 = temp_MPD;
 	  
-	  nPad = 1;;
+	  nPad1 = 1;
+          nPad2 = 1;
 	}
 	
         if(title.find("noise") != string::npos){
 	  if(h1->GetBinContent(10) == 5000 || h1->GetBinContent(10) == 0) continue;
 	  
-	  c_rms[nCanvas] -> cd(nPad);
+	  c_rms[nCanvas] -> cd(nPad1);
 	  h1->Draw("same");
 	  h2->Draw("same");
 
-	  nPad++;
+	  nPad1++;
 	}
 	if(title.find("offset") != string::npos){
           if(h1->GetBinContent(10) == 5000 || h1->GetBinContent(10) == 0) continue;
 
-          c_off[nCanvas] -> cd(nPad);
+          c_off[nCanvas] -> cd(nPad2);
           h1->Draw("same");
 	  h2->Draw("same");
-         
+          nPad2++;
 	}
 
     }
@@ -244,9 +250,9 @@ void pedestal_compare(int run1,int run2)
       
     c_all->Print(output + "(");
 
-    for( int i_can = 0; i_can < nMPD1; i_can++)
+    for( int i_can = 0; i_can < nMPD1; i_can++){
       c_rms[i_can]->Print(output);
-    
+    }
 
     for( int i_can = 0; i_can < nMPD1; i_can++){
       if(i_can == nMPD1 - 1) c_off[i_can]->Print(output + ")");
